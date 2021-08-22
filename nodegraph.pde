@@ -10,9 +10,11 @@ ArrayList<node> allNodes;
 ArrayList<link> allLinks;
 // Mode var: 0 = select, 1 = node, 2 = link
 int mode;
-boolean linking;
-node nodeToLink;
+boolean nodeSelected;
+boolean dragging;
+node selected;
 UiBooster gui;
+
 
 void setup() {
   size(800, 600);
@@ -33,7 +35,7 @@ void draw() {
   }
   color(255);
   for (node currNode : allNodes) {
-    currNode.draw(currNode.equals(nodeToLink));
+    currNode.draw(currNode.equals(selected));
   }
 }
 
@@ -47,21 +49,32 @@ void keyPressed() {
   }
 }
 
-void mouseMoved() {
-} 
+
 
 void mouseDragged() {
+  if (mode == 0 && nodeSelected && dragging) {
+    selected.addCoords(mouseX, mouseY);
+  }
+}
+
+void mouseReleased() {
   if (mode == 0) {
-    for (node currNode : allNodes) {
-      if (currNode.isClicked(mouseX, mouseY)) {
-        currNode.addCoords(mouseX, mouseY);
-        break;
-      }
-    }
+    dragging = false;
   }
 }
 
 void mousePressed() { 
+  if (mode == 0) {
+    selected = null;
+    for (node currNode : allNodes) {
+      if (currNode.isClicked(mouseX, mouseY)) {
+        selected = currNode;
+        nodeSelected = true;
+        dragging = true;
+        break;
+      }
+    }
+  }
   if (mode == 1) {
     String name = "";
 
@@ -76,23 +89,23 @@ void mousePressed() {
   if (mode == 2) {
     for (node currNode : allNodes) {
       if (currNode.isClicked(mouseX, mouseY)) {
-        if (linking) {
+        if (nodeSelected) {
           Integer weight = gui.showSlider("Please select the link weight", "Weight", 0, 20, 0, 5, 1); 
           if (weight != null) {
             String dirString = gui.showSelectionDialog("Please select the directionality of the link", "Direction", "Undirected", "Directed");
             if (dirString != null) {
               int dir = (dirString.equals("Undirected")) ? 0 : 1;
-              link newLink = new link(nodeToLink, currNode, weight, dir);
+              link newLink = new link(selected, currNode, weight, dir);
               allLinks.add(newLink);
-              nodeToLink.links.add(newLink);
+              selected.links.add(newLink);
               currNode.links.add(newLink);
-              linking = false;
-              nodeToLink = null;
+              nodeSelected = false;
+              selected = null;
             }
           }
         } else {
-          nodeToLink = currNode;
-          linking = true;
+          selected = currNode;
+          nodeSelected = true;
         }
         break;
       }

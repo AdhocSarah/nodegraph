@@ -62,8 +62,7 @@ class node {
   
   boolean isClicked(int mX, int mY){
     if (this.hasCoords) {
-      float distSq = pow(this.x-mX, 2)  + pow(this.y-mY, 2);
-      return distSq < pow(NODE_RADIUS, 2);
+      return dist(this.x, this.y, mX, mY) < NODE_RADIUS;
     }
     return false;
   }
